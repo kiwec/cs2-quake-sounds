@@ -77,7 +77,8 @@ class SoundManager:
         executor.shutdown(wait=False)
         await asyncio.gather(*tasks)
         wx.CallAfter(
-            self.client.gui.SetStatusText, f"{self.nb_max_sounds} sounds loaded.",
+            self.client.gui.SetStatusText,
+            f"{self.nb_max_sounds} sounds loaded.",
         )
 
     async def _play(self, sound) -> None:
@@ -91,6 +92,8 @@ class SoundManager:
         while sound.get_state() == AL_PLAYING:
             # Don't end the thread until the sound finished playing
             await asyncio.sleep(1)
+
+        sound.destroy()
 
     def play(self, sound_name: str) -> bool:
         """Tries playing a sound by its name.
