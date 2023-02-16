@@ -117,7 +117,7 @@ class MainFrame(wx.Frame):
 
     async def UpdateSounds(self, event):
         self.updateSoundsBtn.Disable()
-        StartCoroutine(self.client.reload_sounds, self)
+        await self.client.reload_sounds()
 
     async def OnMinimize(self, event):
         if self.IsIconized():

@@ -64,7 +64,7 @@ def get_csgo_path(steamapps_folder):
     print("CS:GO not found :/")
 
 
-def main():
+async def main():
     # Ensure gamestate integration cfg is in csgo's cfg directory
     csgo_dir = get_csgo_path(os.path.join(get_steam_path(), "steamapps"))
     if csgo_dir is not None:
@@ -82,7 +82,7 @@ def main():
         size=wx.Size(320, 230),
         style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX),
     )
-    loop.run_until_complete(app.MainLoop())
+    await app.MainLoop()
 
     # Freeing OpenAL buffers might fail if they are still in use
     # We don't really care since the OS will clean up anyway.
@@ -93,4 +93,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
