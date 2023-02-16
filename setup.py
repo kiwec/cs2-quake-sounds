@@ -18,6 +18,7 @@ setup(
         "aiofiles==0.*,>=0.4.0",
         "pyogg==0.6.14a1",
         "pyopenal==0.7.11a1",
-        "wxasync==0.*,>=0.41.0",
+        "attrdict3==2.0.2",
+        "wxasync==0.48",
     ],
 )

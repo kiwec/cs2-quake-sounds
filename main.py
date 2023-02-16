@@ -74,7 +74,6 @@ async def main():
         )
 
     oalInit()
-    loop = asyncio.get_event_loop()
     app = WxAsyncApp()
     gui.MainFrame(
         None,
