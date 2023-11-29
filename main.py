@@ -69,15 +69,15 @@ async def main():
     csgo_dir = get_csgo_path(os.path.join(get_steam_path(), "steamapps"))
     if csgo_dir is not None:
         copyfile(
-            "gamestate_integration_ccs.cfg",
-            os.path.join(csgo_dir, "csgo", "cfg", "gamestate_integration_ccs.cfg"),
+            "gamestate_integration_cqs.cfg",
+            os.path.join(csgo_dir, "game", "csgo", "cfg", "gamestate_integration_cqs.cfg"),
         )
 
     oalInit()
     app = WxAsyncApp()
     gui.MainFrame(
         None,
-        title="CSGO Custom Sounds",
+        title="CS2 Quake Sounds",
         size=wx.Size(320, 230),
         style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX),
     )

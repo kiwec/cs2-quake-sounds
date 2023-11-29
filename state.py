@@ -1,4 +1,5 @@
 """Related to CSGO Gamestate"""
+import asyncio
 import json
 from threading import Lock, Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -83,7 +84,7 @@ class PlayerState:
 
         self.valid = True
 
-    def compare(self, old_state) -> None:
+    async def compare(self, old_state) -> None:
         # Init state without playing sounds
         if not old_state or not old_state.valid:
             return
@@ -197,11 +198,11 @@ class CSGOState:
                 return False
         return True
 
-    def update(self, json):
+    async def update(self, json):
         """Update the entire game state"""
         with self.lock:
             newstate = PlayerState(json, self.client.sounds)
-            newstate.compare(self.old_state)
+            await newstate.compare(self.old_state)
             self.old_state = newstate
 
 
@@ -211,7 +212,7 @@ class PostHandler(BaseHTTPRequestHandler):
         body = self.rfile.read(content_len)
         self.send_response(200)
         self.end_headers()
-        self.state.update(json.loads(body))
+        asyncio.run(self.state.update(json.loads(body)))
         return
 
     def log_message(self, format, *args):

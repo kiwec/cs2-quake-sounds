@@ -7,7 +7,7 @@ buildOptions: Dict = dict(
     excludes=["tkinter"],
     include_files=[
         "sounds",
-        "gamestate_integration_ccs.cfg",
+        "gamestate_integration_cqs.cfg",
         "icon.ico",
         "config.ini",
     ],
@@ -17,12 +17,12 @@ buildOptions: Dict = dict(
 
 base = "Win32GUI" if sys.platform == "win32" else None
 
-executables = [Executable("main.py", base=base, targetName="csgo-custom-sounds.exe")]
+executables = [Executable("main.py", base=base)]
 
 setup(
-    name="csgo-custom-sounds",
-    version="1.5.2",
-    description="Play custom sounds via Gamestate Integration",
+    name="cs2-quake-sounds",
+    version="2.0.0",
+    description="Play quake sounds via Gamestate Integration",
     options=dict(build_exe=buildOptions),
     executables=executables,
 )

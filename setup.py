@@ -5,9 +5,9 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name="csgo-custom-sounds",
-    version="1.5.2",
-    description="Play custom sounds via Gamestate Integration",
+    name="cs2-custom-sounds",
+    version="2.0.0",
+    description="Play quake sounds via Gamestate Integration",
     python_requires="==3.*,>=3.7.0",
     author="kiwec",
     license="UNLICENSE",
