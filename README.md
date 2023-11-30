@@ -1,6 +1,8 @@
 # cs2-quake-sounds
 
-Custom sounds in your CS2 matches.
+Quake sounds in your CS2 matches.
+
+[Download](https://git.kiwec.net/builds/cs2-quake-sounds.zip)
 
 ### FAQ
 
@@ -20,9 +22,9 @@ Please keep in mind that only OPUS files are supported.
 
 ### Running
 
-You probably want to use the installer.
+You probably should download the [prebuilt zip](https://git.kiwec.net/builds/cs2-quake-sounds.zip).
 
-However, if you want to try the latest version, execute these commands :
+However, if you want to run it from source, execute these commands:
 
 * `git clone https://git.kiwec.net/kiwec/cs2-quake-sounds.git && cd cs2-quake-sounds`
 
@@ -30,13 +32,13 @@ However, if you want to try the latest version, execute these commands :
 
 * `python setup.py install --user`
 
-Then, run it :
+Then, run it:
 
 * `python main.py`
 
 ### Building
 
-Run the following commands :
+Run the following commands:
 
 * `python setup.py install --user`
 
