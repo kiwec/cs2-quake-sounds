@@ -124,7 +124,7 @@ class PlayerState:
 
         # Play round start, win, lose, MVP
         if self.is_local_player and self.mvps == old_state.mvps + 1:
-            self.sounds.play("MVP")
+            self.sounds.play("MVP") or self.sounds.play("Round win")
         elif self.phase != old_state.phase:
             if self.phase == "over" and self.mvps == old_state.mvps:
                 self.sounds.play("Round win" if self.won_round else "Round lose")
