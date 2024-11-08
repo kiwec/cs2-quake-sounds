@@ -68,6 +68,8 @@ class PlayerState:
         self.round_headshots = state["round_killhs"]
         self.total_deaths = match_stats["deaths"]
         self.total_kills = match_stats["kills"]
+        self.score = match_stats["score"]
+
 
         # ------------------------------------------------------------
         # Below, only states that can't be compared to previous states
@@ -134,8 +136,8 @@ class PlayerState:
             return
         ##########################################################
 
-        # Lost kills - either teamkilled or suicided
-        if self.total_kills < old_state.total_kills:
+        # Lost score - either teamkilled or suicided
+        if self.score < old_state.score:
             if self.total_deaths == old_state.total_deaths + 1:
                 self.sounds.play("Suicide")
             elif self.total_deaths == old_state.total_deaths:
