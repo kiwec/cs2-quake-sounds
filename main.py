@@ -1,4 +1,4 @@
-"""Plays quake sounds according to CSGO Gamestate"""
+"""Plays quake sounds according to CS2 Gamestate"""
 import asyncio
 import os
 import wx  # type: ignore  # type: ignore
@@ -29,7 +29,7 @@ def get_steam_path() -> str:
         return os.path.join(Path.home(), ".steam/root")
 
 
-def get_csgo_path(steamapps_folder):
+def get_cs2_path(steamapps_folder):
     # Get every SteamLibrary folder
     with open(os.path.join(steamapps_folder, "libraryfolders.vdf")) as infile:
         libraryfolders = steamfiles.load(infile)
@@ -46,7 +46,7 @@ def get_csgo_path(steamapps_folder):
             break
         i = i + 1
 
-    # Find the one CS:GO is in
+    # Find the one CS2 is in
     for folder in folders:
         try:
             appmanifest = os.path.join(folder, "appmanifest_730.acf")
@@ -61,16 +61,16 @@ def get_csgo_path(steamapps_folder):
         except FileNotFoundError:
             continue
 
-    print("CS:GO not found :/")
+    print("CS2 not found :/")
 
 
 async def main():
     # Ensure gamestate integration cfg is in csgo's cfg directory
-    csgo_dir = get_csgo_path(os.path.join(get_steam_path(), "steamapps"))
-    if csgo_dir is not None:
+    cs2_dir = get_cs2_path(os.path.join(get_steam_path(), "steamapps"))
+    if cs2_dir is not None:
         copyfile(
             "gamestate_integration_cqs.cfg",
-            os.path.join(csgo_dir, "game", "csgo", "cfg", "gamestate_integration_cqs.cfg"),
+            os.path.join(cs2_dir, "game", "csgo", "cfg", "gamestate_integration_cqs.cfg"),
         )
 
     oalInit()

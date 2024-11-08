@@ -1,4 +1,4 @@
-"""Related to CSGO Gamestate"""
+"""Related to CS2 Gamestate"""
 import asyncio
 import json
 from threading import Lock, Thread
@@ -174,8 +174,8 @@ class PlayerState:
             self.sounds.play("Collateral")
 
 
-class CSGOState:
-    """Follows the CSGO state via gamestate integration"""
+class CS2State:
+    """Follows the CS2 state via gamestate integration"""
 
     def __init__(self, client):
         self.lock = Lock()

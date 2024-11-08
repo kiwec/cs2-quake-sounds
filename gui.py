@@ -94,7 +94,7 @@ class MainFrame(wx.Frame):
         return settingsBox
 
     def SetStatusText(self, text):
-        """Override default SetStatusText to avoid minimizing CS:GO"""
+        """Override default SetStatusText to avoid minimizing CS2"""
         if self.IsIconized():
             return
         super().SetStatusText(text)

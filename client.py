@@ -1,17 +1,17 @@
 from sounds import SoundManager
-from state import CSGOState
+from state import CS2State
 
 
 class Client:
     def __init__(self, gui) -> None:
         self.gui = gui
         self.sounds = SoundManager(self)
-        self.state = CSGOState(self)
+        self.state = CS2State(self)
 
     async def update_status(self) -> None:
         with self.state.lock:
             if self.state.old_state is None:
-                self.gui.SetStatusText("Waiting for CS:GO...")
+                self.gui.SetStatusText("Waiting for CS2...")
             elif self.state.old_state.is_ingame:
                 phase = self.state.old_state.phase
                 if phase == "unknown":
