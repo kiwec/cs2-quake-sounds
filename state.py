@@ -53,11 +53,12 @@ class PlayerState:
         self.is_knife_active = False
         for weapon in player["weapons"]:
             weapon = player["weapons"][weapon]
-            # Taser has no 'type' so we have to check for its name
-            if weapon["name"] == "weapon_taser":
-                self.is_knife_active = weapon["state"] == "active"
-            elif weapon["type"] == "Knife":
-                self.is_knife_active = weapon["state"] == "active"
+            if weapon["state"] != "active":
+                continue
+            if weapon["name"] in ("weapon_knife", "weapon_taser"):
+                self.is_knife_active = True
+                break
+
         self.mvps = match_stats["mvps"]
         self.phase = round["phase"] if round else "unknown"
         self.remaining_timeouts = (
