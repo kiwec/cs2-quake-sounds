@@ -17,11 +17,11 @@ buildOptions: Dict = dict(
 
 base = "Win32GUI" if sys.platform == "win32" else None
 
-executables = [Executable("main.py", base=base)]
+executables = [Executable("main.py", base=base, icon="icon.ico")]
 
 setup(
     name="cs2-quake-sounds",
-    version="2.0.0",
+    version="2.0.1",
     description="Play quake sounds via Gamestate Integration",
     options=dict(build_exe=buildOptions),
     executables=executables,

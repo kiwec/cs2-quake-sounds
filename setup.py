@@ -6,7 +6,7 @@ except ImportError:
 
 setup(
     name="cs2-custom-sounds",
-    version="2.0.0",
+    version="2.0.1",
     description="Play quake sounds via Gamestate Integration",
     python_requires="==3.*,>=3.7.0",
     author="kiwec",
