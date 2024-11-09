@@ -92,7 +92,7 @@ class PlayerState:
         if not old_state or not old_state.valid:
             return
 
-        if not self.is_ingame or not self.valid:
+        if not self.valid or not self.is_ingame:
             return
 
         # Ignore warmup
