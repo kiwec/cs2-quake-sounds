@@ -13,7 +13,7 @@ from wxasync import StartCoroutine  # type: ignore
 import config
 
 
-class SoundManager:
+class SoundEngine:
     """Loads and plays sounds"""
 
     def __init__(self, client) -> None:
@@ -76,10 +76,6 @@ class SoundManager:
                 )
         executor.shutdown(wait=False)
         await asyncio.gather(*tasks)
-        wx.CallAfter(
-            self.client.gui.SetStatusText,
-            f"{self.nb_max_sounds} sounds loaded.",
-        )
 
     async def _play(self, sound) -> None:
         """Play sound from its file path."""
@@ -103,8 +99,9 @@ class SoundManager:
         with self.lock:
             if len(self.loaded_sounds[sound_name]) > 0:
                 sound = random.choice(self.loaded_sounds[sound_name])
+                self.client.log(f"Played '{sound_name}'.")
                 StartCoroutine(self._play(sound), self.client.gui)
                 return True
             else:
-                print(f"[!] No sound found for '{sound_name}'.")
+                self.client.log(f"[!] No sound found for '{sound_name}'.")
                 return False

@@ -1,28 +1,31 @@
-from sounds import SoundManager
+from sounds import SoundEngine
 from state import CS2State
 
 
 class Client:
     def __init__(self, gui) -> None:
         self.gui = gui
-        self.sounds = SoundManager(self)
+        self.sounds = SoundEngine(self)
         self.state = CS2State(self)
 
+    def log(self, text) -> None:
+        print(text)
+        self.gui.SetStatusText(text)
+
+    # TODO: call this every few seconds or something
     async def update_status(self) -> None:
         with self.state.lock:
             if self.state.old_state is None:
-                self.gui.SetStatusText("Waiting for CS2...")
+                self.log("Waiting for CS2...")
             elif self.state.old_state.is_ingame:
                 phase = self.state.old_state.phase
                 if phase == "unknown":
                     phase = ""
                 else:
                     phase = " (%s)" % phase
-                self.gui.SetStatusText(
-                    f"Round {self.state.old_state.current_round}{phase}"
-                )
+                self.log(f"Round {self.state.old_state.current_round}{phase}")
             else:
-                self.gui.SetStatusText("Not in a match.")
+                self.log("Not in a match.")
 
     async def reload_sounds(self) -> None:
         """Reloads all sounds.
@@ -33,3 +36,4 @@ class Client:
         await self.update_status()
         self.gui.updateSoundsBtn.Enable()
         self.sounds.play("Round start")
+        self.log(f"{self.sounds.nb_max_sounds} sounds loaded.")

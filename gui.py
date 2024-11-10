@@ -26,7 +26,6 @@ class MainFrame(wx.Frame):
         self.SetIcon(wx.Icon("icon.ico"))
 
         self.CreateStatusBar()
-        self.SetStatusText("Loading sounds...")
         self.client = client.Client(self)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -97,7 +96,8 @@ class MainFrame(wx.Frame):
         """Override default SetStatusText to avoid minimizing CS2"""
         if self.IsIconized():
             return
-        super().SetStatusText(text)
+
+        wx.CallAfter(super().SetStatusText, text)
 
     async def OnUnMinimize(self, event):
         await self.client.update_status()
