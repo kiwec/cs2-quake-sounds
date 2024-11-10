@@ -40,8 +40,9 @@ BASS_ERROR_NOPLAY = 24
 BASS_ERROR_FREQ = 25
 BASS_ERROR_UNKNOWN = -1
 
-# Attribute flags
+# Random flags
 BASS_ATTRIB_VOL = 2
+BASS_UNICODE = 0x80000000
 
 # Device setup flags
 BASS_DEVICE_8BITS = 1
@@ -98,12 +99,13 @@ def ErrorGetCode():
 
 def StreamCreateFile(mem, file, offset=0, length=0, flags=0):
     """Create a sample stream from a file"""
-    if mem:
-        mode = c_bool(True)
+    if platform.system() == "Windows":
+        filepath = c_wchar_p(file)
+        flags = flags | BASS_UNICODE
     else:
-        mode = c_bool(False)
+        filepath = file.encode()
     
-    result = bass.BASS_StreamCreateFile(mode, file.encode(), offset, length, flags)
+    result = bass.BASS_StreamCreateFile(c_bool(mem), filepath, c_ulonglong(offset), c_ulonglong(length), c_ulong(flags))
     if result == 0:
         return None
     return result
@@ -111,12 +113,13 @@ def StreamCreateFile(mem, file, offset=0, length=0, flags=0):
 
 def SampleLoad(mem, file, offset=0, length=0, max=1, flags=0):
     """Load a sample from a file"""
-    if mem:
-        mode = c_bool(True)
+    if platform.system() == "Windows":
+        filepath = c_wchar_p(file)
+        flags = flags | BASS_UNICODE
     else:
-        mode = c_bool(False)
+        filepath = file.encode()
         
-    result = bass.BASS_SampleLoad(mode, file.encode(), offset, length, max, flags)
+    result = bass.BASS_SampleLoad(c_bool(mem), filepath, c_ulonglong(offset), c_ulong(length), c_ulong(max), c_ulong(flags))
     if result == 0:
         return None
     return result
