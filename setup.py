@@ -16,8 +16,6 @@ setup(
     package_data={},
     install_requires=[
         "aiofiles==0.*,>=0.4.0",
-        "pyogg==0.6.14a1",
-        "pyopenal==0.7.11a1",
         "attrdict3==2.0.2",
         "wxasync==0.48",
     ],

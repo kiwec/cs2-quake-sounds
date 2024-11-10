@@ -3,6 +3,7 @@ import wx  # type: ignore
 import wx.adv  # type: ignore
 from wxasync import AsyncBind, StartCoroutine  # type: ignore
 
+import bass
 import client
 import config
 
@@ -103,12 +104,13 @@ class MainFrame(wx.Frame):
         await self.client.update_status()
 
     async def OnVolumeSlider(self, event):
-        config.set("Sounds", "Volume", self.volumeSlider.Value)
+        newvol = self.volumeSlider.Value
+        config.set("Sounds", "Volume", newvol)
         with self.client.sounds.lock:
             # Volume didn't change
-            if self.client.sounds.volume == self.volumeSlider.Value:
+            if self.client.sounds.volume == newvol:
                 return
-            self.client.sounds.volume = self.volumeSlider.Value
+            self.client.sounds.volume = newvol
         self.client.sounds.play("Headshot")
 
     async def OpenSoundsDir(self, event):

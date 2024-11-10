@@ -5,12 +5,18 @@ import random
 import wx  # type: ignore
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from openal import AL_PLAYING, PYOGG_AVAIL, Buffer, OpusFile, Source  # type: ignore
 from threading import Lock
 from typing import Dict, List
 from wxasync import StartCoroutine  # type: ignore
 
+import bass
 import config
+
+
+class Sound:
+    filename: str
+    handle: int
+    is_stream: bool
 
 
 class SoundEngine:
@@ -38,12 +44,22 @@ class SoundEngine:
         return max
 
     def load(self, category: str, filepath: str) -> None:
-        # Can't load files - TODO show error & quit
-        if not PYOGG_AVAIL:
+        sound = Sound()
+        sound.filename = filepath
+
+        if category in ("MVP", "Round lose", "Round start", "Round win", "Timeout"):
+            sound.handle = bass.StreamCreateFile(False, filepath)
+            sound.is_stream = True
+        else:
+            sound.handle = bass.SampleLoad(False, filepath)
+            sound.is_stream = False
+
+        if sound.handle is None:
+            self.client.log(f"Failed to load '{filepath}': error {bass.ErrorGetCode()}")
             return
 
         with self.lock:
-            self.loaded_sounds[category].append(Buffer(OpusFile(filepath)))
+            self.loaded_sounds[category].append(sound)
             wx.CallAfter(
                 self.client.gui.SetStatusText,
                 f"Loading sounds... ({len(self.loaded_sounds)}/{self.nb_max_sounds})",
@@ -53,16 +69,23 @@ class SoundEngine:
         """Reloads the list of available sounds.
 
         The async logic is a bit complicated here, but it boils down to the following :
-        - No more than 5 sounds will be loaded at the same time
+        - No more than 1 sound will be loaded at the same time
         - Every sound is getting loaded in a separate thread, so the GUI is not blocked
         - We're not waiting using the executor but by waiting for all tasks to end,
         so the operation stays asynchronous
         """
         with self.lock:
+            for category in self.loaded_sounds:
+                for sound in self.loaded_sounds[category]:
+                    if sound.is_stream:
+                        bass.StreamFree(sound.handle)
+                    else:
+                        bass.SampleFree(sound.handle)
+
             self.loaded_sounds = defaultdict(list)
             self.nb_max_sounds = self.max_sounds()
 
-        executor = ThreadPoolExecutor(max_workers=5)
+        executor = ThreadPoolExecutor(max_workers=1)
         loop = asyncio.get_running_loop()
         tasks: List = []
         for category in os.listdir("sounds"):
@@ -77,20 +100,6 @@ class SoundEngine:
         executor.shutdown(wait=False)
         await asyncio.gather(*tasks)
 
-    async def _play(self, sound) -> None:
-        """Play sound from its file path."""
-        sound = Source(sound)
-        # gain can be between 0.0 and 2.0 with the GUI's volume slider
-        gain: float = 0.0 if self.volume == 0 else self.volume / 50.0
-        sound.set_gain(gain)
-        sound.play()
-
-        while sound.get_state() == AL_PLAYING:
-            # Don't end the thread until the sound finished playing
-            await asyncio.sleep(1)
-
-        sound.destroy()
-
     def play(self, sound_name: str) -> bool:
         """Tries playing a sound by its name.
 
@@ -99,8 +108,23 @@ class SoundEngine:
         with self.lock:
             if len(self.loaded_sounds[sound_name]) > 0:
                 sound = random.choice(self.loaded_sounds[sound_name])
-                self.client.log(f"Played '{sound_name}'.")
-                StartCoroutine(self._play(sound), self.client.gui)
+
+                if sound.is_stream:
+                    channel = sound.handle
+                else:
+                    channel = bass.SampleGetChannel(sound.handle)
+
+                # gain can be between 0.0 and 2.0 with the GUI's volume slider
+                gain: float = 0.0 if self.volume == 0 else self.volume / 50.0
+                if not bass.ChannelSetVolume(channel, gain):
+                    self.client.log(f"Failed to set volume of '{sound.filename}': error {bass.ErrorGetCode()}")
+                    return False
+
+                if not bass.ChannelPlay(channel):
+                    self.client.log(f"Failed to play '{sound.filename}': error {bass.ErrorGetCode()}")
+                    return False
+
+                self.client.log(f"Played '{sound.filename}'.")
                 return True
             else:
                 self.client.log(f"[!] No sound found for '{sound_name}'.")

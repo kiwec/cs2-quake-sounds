@@ -2,12 +2,12 @@
 import asyncio
 import os
 import wx  # type: ignore  # type: ignore
-from openal import oalInit, oalQuit  # type: ignore
 from pathlib import Path
 from shutil import copyfile
 from wxasync import WxAsyncApp  # type: ignore
 
 # Local files
+import bass
 import gui
 import steamfiles
 
@@ -73,7 +73,16 @@ async def main():
             os.path.join(cs2_dir, "game", "csgo", "cfg", "gamestate_integration_cqs.cfg"),
         )
 
-    oalInit()
+    if not bass.Init():
+        print(f"Failed to initialize sound engine: error {bass.ErrorGetCode()}")
+        return
+    if not bass.PluginLoad("bassflac"):
+        print(f"Failed to initialize BASS flac module: error {bass.ErrorGetCode()}")
+        return
+    if not bass.PluginLoad("bassopus"):
+        print(f"Failed to initialize BASS opus module: error {bass.ErrorGetCode()}")
+        return
+
     app = WxAsyncApp()
     gui.MainFrame(
         None,
@@ -83,12 +92,7 @@ async def main():
     )
     await app.MainLoop()
 
-    # Freeing OpenAL buffers might fail if they are still in use
-    # We don't really care since the OS will clean up anyway.
-    try:
-        oalQuit()
-    except:  # noqa
-        pass
+    bass.Free();
 
 
 if __name__ == "__main__":

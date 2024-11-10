@@ -3,7 +3,7 @@ from cx_Freeze import setup, Executable  # type: ignore
 from typing import Dict
 
 buildOptions: Dict = dict(
-    packages=["aiofiles", "pyogg", "openal", "wx", "wxasync"],
+    packages=["aiofiles", "wx", "wxasync"],
     excludes=["tkinter"],
     include_files=[
         "sounds",

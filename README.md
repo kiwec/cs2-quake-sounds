@@ -18,8 +18,6 @@ No. This is using [Game State Integration](https://developer.valvesoftware.com/w
 
 Drop your sounds in the corresponding `sounds` folder. Feel free to remove the ones you don't like, too.
 
-Please keep in mind that only OPUS files are supported.
-
 ### Running
 
 You probably should download the [prebuilt zip](https://git.kiwec.net/builds/cs2-quake-sounds.zip).
