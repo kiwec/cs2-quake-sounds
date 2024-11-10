@@ -24,7 +24,7 @@ executables = [Executable("main.py", base=base, icon="icon.ico")]
 
 setup(
     name="cs2-quake-sounds",
-    version="2.1.0",
+    version="2.1.1",
     description="Play quake sounds via Gamestate Integration",
     options=dict(build_exe=buildOptions),
     executables=executables,

@@ -12,7 +12,7 @@ elif platform.system() == 'Darwin':
 else:
     bass_lib = 'libbass.so'
 
-bass = CDLL(os.path.join(os.path.dirname(os.path.abspath(__file__)), bass_lib))
+bass = CDLL(os.path.join(os.getcwd(), bass_lib))
 
 # Define function prototypes for correct type handling
 bass.BASS_ChannelGetLength.restype = c_uint64
@@ -81,7 +81,7 @@ def PluginLoad(filename):
     else:
         filename += '.so'
 
-    filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+    filepath = os.path.join(os.getcwd(), filename)
     handle = bass.BASS_PluginLoad(filepath.encode(), c_ulong(0))
     return handle != 0
 
