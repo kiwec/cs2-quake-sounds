@@ -27,6 +27,7 @@ class MainFrame(wx.Frame):
         self.SetIcon(wx.Icon("icon.ico"))
 
         self.CreateStatusBar()
+        self.last_status = ""
         self.client = client.Client(self)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -98,10 +99,11 @@ class MainFrame(wx.Frame):
         if self.IsIconized():
             return
 
+        self.last_status = text
         wx.CallAfter(super().SetStatusText, text)
 
     async def OnUnMinimize(self, event):
-        await self.client.update_status()
+        self.SetStatusText(self.last_status)
 
     async def OnVolumeSlider(self, event):
         newvol = self.volumeSlider.Value

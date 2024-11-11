@@ -12,28 +12,12 @@ class Client:
         print(text)
         self.gui.SetStatusText(text)
 
-    # TODO: call this every few seconds or something
-    async def update_status(self) -> None:
-        with self.state.lock:
-            if self.state.old_state is None:
-                self.log("Waiting for CS2...")
-            elif self.state.old_state.is_ingame:
-                phase = self.state.old_state.phase
-                if phase == "unknown":
-                    phase = ""
-                else:
-                    phase = " (%s)" % phase
-                self.log(f"Round {self.state.old_state.current_round}{phase}")
-            else:
-                self.log("Not in a match.")
-
     async def reload_sounds(self) -> None:
         """Reloads all sounds.
 
         Do not call outside of gui, unless you disable the update sounds button first.
         """
         await self.sounds.reload()
-        await self.update_status()
         self.gui.updateSoundsBtn.Enable()
         self.sounds.play("Round start")
         self.log(f"{self.sounds.nb_max_sounds} sounds loaded.")

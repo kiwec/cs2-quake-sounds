@@ -61,7 +61,7 @@ class PlayerState:
                 break
 
         self.mvps = match_stats["mvps"]
-        self.phase = round["phase"] if round else "unknown"
+        self.phase = round["phase"] if round else "warmup"
         self.remaining_timeouts = (
             map["team_ct"]["timeouts_remaining"] + map["team_t"]["timeouts_remaining"]
         )
@@ -90,10 +90,11 @@ class PlayerState:
 
     async def compare(self, old_state) -> None:
         # Init state without playing sounds
-        if not old_state or not old_state.valid:
+        if not old_state or not self.valid or not old_state.valid:
             return
 
-        if not self.valid or not self.is_ingame:
+        if not self.is_ingame:
+            self.sounds.client.log(f"Waiting for match")
             return
 
         if self.playerid != old_state.playerid:
@@ -109,10 +110,10 @@ class PlayerState:
             self.play_timeout = True
 
         if self.phase != old_state.phase:
-            self.sounds.client.log(f"New phase: {self.phase}")
+            self.sounds.client.log(f"Round {self.current_round} ({self.phase})")
             self.sounds.stop()
 
-            if self.phase == "unknown" or self.phase == "warmup":
+            if self.phase == "warmup":
                 self.sounds.play("Warmup")
             elif self.phase == "freezetime":
                 if self.play_timeout:
