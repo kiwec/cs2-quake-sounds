@@ -135,9 +135,9 @@ def SampleGetChannel(handle):
         return None
     return result
 
-def ChannelPlay(handle, restart=False):
+def ChannelPlay(handle, restart=True):
     """Start playback of a sample, stream, or music"""
-    return bass.BASS_ChannelPlay(handle, restart) != 0
+    return bass.BASS_ChannelPlay(handle, c_bool(restart)) != 0
 
 def ChannelStop(handle):
     """Stop playback of a sample, stream, or music"""
