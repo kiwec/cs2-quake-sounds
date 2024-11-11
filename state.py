@@ -11,29 +11,15 @@ class PlayerState:
     def __init__(self, json, sounds):
         self.sounds = sounds
 
-        provider = json.get("provider", {})
-        if provider:
-            self.steamid = provider["steamid"]
-        else:
-            self.steamid = 0
-
-        player = json.get("player", {})
-        if player:
-            self.playerid = player["steamid"]
-            self.player_name = player["name"]
-            self.is_ingame = player["activity"] != "menu"
-        else:
-            self.playerid = -1
-            self.player_name = "no one"
-            self.is_ingame = False
-
-        # Is the GameState tracking local player or spectated player
-        self.is_local_player = self.steamid == self.playerid
-
         # NOTE : this is modified in compare()
         self.play_timeout = False
 
         # Sane defaults
+        self.steamid = 0
+        self.playerid = -1
+        self.is_local_player = False
+        self.player_name = "no one"
+        self.is_ingame = False
         self.current_round = 0
         self.flash_opacity = 0
         self.is_knife_active = False
@@ -47,49 +33,54 @@ class PlayerState:
         self.score = 0
         self.won_round = False
 
-        if not self.is_ingame:
-            return
+        try:
+            self.steamid = json["provider"]["steamid"]
+        except KeyError:
+            pass
 
         try:
-            map = json.get("map", {})
-            round = json.get("round", {})
-            match_stats = player["match_stats"]
+            player = json["player"]
+            self.playerid = player["steamid"]
+            self.is_local_player = self.steamid == self.playerid
+            self.player_name = player["name"]
+            self.is_ingame = player["activity"] != "menu"
+
+            for weapon in player["weapons"]:
+                weapon = player["weapons"][weapon]
+                if weapon["state"] != "active":
+                    continue
+                if weapon["name"] in ("weapon_knife", "weapon_taser"):
+                    self.is_knife_active = True
+                    break
+
             state = player["state"]
-            self.current_round = map["round"]
-        except KeyError as err:
-            print("Invalid json :")
-            print(err)
-            print(json)
-            return
+            self.flash_opacity = state["flashed"]
 
-        self.flash_opacity = state["flashed"]
-        self.is_knife_active = False
-        for weapon in player["weapons"]:
-            weapon = player["weapons"][weapon]
-            if weapon["state"] != "active":
-                continue
-            if weapon["name"] in ("weapon_knife", "weapon_taser"):
-                self.is_knife_active = True
-                break
+            match_stats = player["match_stats"]
+            self.mvps = match_stats["mvps"]
+            self.round_kills = state["round_kills"]
+            self.round_headshots = state["round_killhs"]
+            self.total_deaths = match_stats["deaths"]
+            self.total_kills = match_stats["kills"]
+            self.score = match_stats["score"]
+        except KeyError:
+            pass
 
-        self.mvps = match_stats["mvps"]
-        self.phase = round["phase"] if round else "warmup"
-        self.remaining_timeouts = (
-            map["team_ct"]["timeouts_remaining"] + map["team_t"]["timeouts_remaining"]
-        )
-        self.round_kills = state["round_kills"]
-        self.round_headshots = state["round_killhs"]
-        self.total_deaths = match_stats["deaths"]
-        self.total_kills = match_stats["kills"]
-        self.score = match_stats["score"]
+        try:
+            self.phase = json["round"]["phase"]
+            if self.phase == "over":
+                self.won_round = json["round"]["win_team"] == json["player"]["team"]
+        except KeyError:
+            pass
 
-        # Updates only at round end
-        if self.phase == "over":
-            try:
-                self.won_round = round["win_team"] == player["team"]
-            except KeyError:
-                # Player has not yet joined a team
-                self.won_round = False
+        try:
+            self.current_round = json["map"]["round"]
+            self.remaining_timeouts = (
+                json["map"]["team_ct"]["timeouts_remaining"] +
+                json["map"]["team_t"]["timeouts_remaining"]
+            )
+        except KeyError:
+            pass
 
     async def compare(self, old_state) -> None:
         if not self.is_ingame:
@@ -128,10 +119,10 @@ class PlayerState:
                 else:
                     self.sounds.play("Round win" if self.won_round else "Round lose")
 
-        # Don't play player-triggered sounds below this ##########
-        if not self.is_local_player:
+        if not self.is_local_player or not old_state.is_local_player:
+            # We're spectating (or just were spectating someone)
+            # We can only track state changes correctly for the local player.
             return
-        ##########################################################
 
         # Lost score - either teamkilled or suicided
         if self.score < old_state.score:

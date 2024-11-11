@@ -131,6 +131,7 @@ class SoundEngine:
                     self.client.log(f"Failed to play '{sound.filename}': error {bass.ErrorGetCode()}")
                     return False
 
+                print(f"Playing '{sound_name}'.")
                 return True
             else:
                 self.client.log(f"[!] No sound found for '{sound_name}'.")
