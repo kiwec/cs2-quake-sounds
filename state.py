@@ -25,6 +25,7 @@ class PlayerState:
         # Is the GameState tracking local player or spectated player
         self.steamid = provider["steamid"]
         self.playerid = player["steamid"]
+        self.player_name = player["name"]
         self.is_local_player = self.steamid == self.playerid
         self.is_ingame = player["activity"] != "menu"
 
@@ -95,41 +96,37 @@ class PlayerState:
         if not self.valid or not self.is_ingame:
             return
 
-        # Ignore warmup
-        if self.phase == "warmup":
-            print("[*] New match")
-            return
+        if self.playerid != old_state.playerid:
+            if self.is_local_player:
+                self.sounds.client.log(f"Not spectating anymore")
+            else:
+                self.sounds.client.log(f"Spectating {self.player_name}")
 
-        # Reset state after warmup
-        if self.phase != "unknown" and old_state.phase == "unknown":
-            print("[*] End of warmup")
-            return
-
-        # Check if we should play timeout
-        if not self.play_timeout:
-            self.play_timeout = old_state.play_timeout
+        # We don't know the difference between freezetime and a technical pause.
+        # However, we can check if teams used one of their timeouts.
+        self.play_timeout = old_state.play_timeout
         if self.remaining_timeouts == old_state.remaining_timeouts - 1:
             self.play_timeout = True
-            print("[*] Timeout sound queued for next freezetime")
 
-        # Play timeout music
-        if self.phase == "freezetime" and self.play_timeout:
-            self.sounds.play("Timeout")
-            self.play_timeout = False
+        if self.phase != old_state.phase:
+            self.sounds.client.log(f"New phase: {self.phase}")
+            self.sounds.stop()
 
-        # Reset state when switching players (used for MVPs)
-        if self.playerid != old_state.playerid:
-            print("[*] Different player")
-            return
-
-        # Play round start, win, lose, MVP
-        if self.is_local_player and self.mvps == old_state.mvps + 1:
-            self.sounds.play("MVP") or self.sounds.play("Round win")
-        elif self.phase != old_state.phase:
-            if self.phase == "over" and self.mvps == old_state.mvps:
-                self.sounds.play("Round win" if self.won_round else "Round lose")
+            if self.phase == "unknown" or self.phase == "warmup":
+                self.sounds.play("Warmup")
+            elif self.phase == "freezetime":
+                if self.play_timeout:
+                    self.sounds.play("Timeout") or self.sounds.play("Freezetime")
+                    self.play_timeout = False
+                else:
+                    self.sounds.play("Freezetime")
             elif self.phase == "live":
                 self.sounds.play("Round start")
+            elif self.phase == "over":
+                if self.is_local_player and self.mvps == old_state.mvps + 1:
+                    self.sounds.play("MVP") or self.sounds.play("Round win")
+                else:
+                    self.sounds.play("Round win" if self.won_round else "Round lose")
 
         # Don't play player-triggered sounds below this ##########
         if not self.is_local_player:

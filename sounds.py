@@ -27,6 +27,7 @@ class SoundEngine:
         self.client = client
         self.lock = Lock()
         self.nb_max_sounds = 0
+        self.music = None
 
         # Dict[category:List[sound_data]]
         self.loaded_sounds: Dict[str, List[Buffer]] = defaultdict(list)
@@ -100,6 +101,12 @@ class SoundEngine:
         executor.shutdown(wait=False)
         await asyncio.gather(*tasks)
 
+    def stop(self) -> None:
+        with self.lock:
+            if self.music is not None:
+                bass.ChannelStop(self.music)
+                self.music = None
+
     def play(self, sound_name: str) -> bool:
         """Tries playing a sound by its name.
 
@@ -111,6 +118,7 @@ class SoundEngine:
 
                 if sound.is_stream:
                     channel = sound.handle
+                    self.music = sound.handle
                 else:
                     channel = bass.SampleGetChannel(sound.handle)
 
