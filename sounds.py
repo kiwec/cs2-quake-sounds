@@ -23,7 +23,6 @@ class SoundEngine:
     """Loads and plays sounds"""
 
     def __init__(self, client) -> None:
-        self.playerid = None
         self.client = client
         self.lock = Lock()
         self.nb_max_sounds = 0

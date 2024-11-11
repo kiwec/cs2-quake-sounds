@@ -9,33 +9,45 @@ import config
 
 class PlayerState:
     def __init__(self, json, sounds):
-        self.valid = False
         self.sounds = sounds
 
         provider = json.get("provider", {})
-        if not provider:
-            # Not ingame
-            return
+        if provider:
+            self.steamid = provider["steamid"]
+        else:
+            self.steamid = 0
 
         player = json.get("player", {})
-        if not player:
-            # Invalid gamestate
-            return
+        if player:
+            self.playerid = player["steamid"]
+            self.player_name = player["name"]
+            self.is_ingame = player["activity"] != "menu"
+        else:
+            self.playerid = -1
+            self.player_name = "no one"
+            self.is_ingame = False
 
         # Is the GameState tracking local player or spectated player
-        self.steamid = provider["steamid"]
-        self.playerid = player["steamid"]
-        self.player_name = player["name"]
         self.is_local_player = self.steamid == self.playerid
-        self.is_ingame = player["activity"] != "menu"
 
         # NOTE : this is modified in compare()
         self.play_timeout = False
 
-        if self.is_ingame:
-            sounds.playerid = self.playerid
-        else:
-            sounds.playerid = None
+        # Sane defaults
+        self.current_round = 0
+        self.flash_opacity = 0
+        self.is_knife_active = False
+        self.mvps = 0
+        self.phase = "none"
+        self.remaining_timeouts = -1
+        self.round_kills = 0
+        self.round_headshots = 0
+        self.total_deaths = 0
+        self.total_kills = 0
+        self.score = 0
+        self.won_round = False
+
+        if not self.is_ingame:
             return
 
         try:
@@ -71,11 +83,6 @@ class PlayerState:
         self.total_kills = match_stats["kills"]
         self.score = match_stats["score"]
 
-
-        # ------------------------------------------------------------
-        # Below, only states that can't be compared to previous states
-        # ------------------------------------------------------------
-
         # Updates only at round end
         if self.phase == "over":
             try:
@@ -84,15 +91,7 @@ class PlayerState:
                 # Player has not yet joined a team
                 self.won_round = False
 
-        # ------------------------------------------------------------
-
-        self.valid = True
-
     async def compare(self, old_state) -> None:
-        # Init state without playing sounds
-        if not old_state or not self.valid or not old_state.valid:
-            return
-
         if not self.is_ingame:
             self.sounds.client.log(f"Waiting for match")
             return
@@ -179,32 +178,19 @@ class CS2State:
 
     def __init__(self, client):
         self.lock = Lock()
-        self.old_state = None
         self.client = client
+        self.state = PlayerState({}, self.client.sounds)
 
         server = HTTPServer(("127.0.0.1", 3000), PostHandler)
         server.RequestHandlerClass.state = self
         Thread(target=server.serve_forever, daemon=True).start()
 
-    def is_ingame(self):
-        return self.old_state is not None and self.old_state.is_ingame is True
-
-    def is_alive(self):
-        with self.lock:
-            if not self.is_ingame():
-                return False
-            if self.old_state.phase != "live":
-                return False
-            if self.old_state.steamid != self.old_state.playerid:
-                return False
-        return True
-
     async def update(self, json):
         """Update the entire game state"""
         with self.lock:
             newstate = PlayerState(json, self.client.sounds)
-            await newstate.compare(self.old_state)
-            self.old_state = newstate
+            await newstate.compare(self.state)
+            self.state = newstate
 
 
 class PostHandler(BaseHTTPRequestHandler):
