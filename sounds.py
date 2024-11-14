@@ -47,7 +47,7 @@ class SoundEngine:
         sound = Sound()
         sound.filename = filepath
 
-        if category in ("Freezetime", "MVP", "Round lose", "Round start", "Round win", "Timeout", "Warmup"):
+        if category in ("Freezetime", "MVP", "Round lose", "Round start", "Round win", "Timeout"):
             sound.handle = bass.StreamCreateFile(False, filepath)
             sound.is_stream = True
         else:

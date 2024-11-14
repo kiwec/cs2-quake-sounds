@@ -103,9 +103,7 @@ class PlayerState:
             self.sounds.client.log(f"Round {self.current_round} ({self.phase})")
             self.sounds.stop()
 
-            if self.phase == "warmup":
-                self.sounds.play("Warmup")
-            elif self.phase == "freezetime":
+            if self.phase == "freezetime":
                 if self.play_timeout:
                     self.sounds.play("Timeout") or self.sounds.play("Freezetime")
                     self.play_timeout = False
