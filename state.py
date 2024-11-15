@@ -101,7 +101,8 @@ class PlayerState:
 
         if self.phase != old_state.phase:
             self.sounds.client.log(f"Round {self.current_round} ({self.phase})")
-            self.sounds.stop()
+            if config.config["Sound"].getfloat("StopOnRoundEnd", False):
+                self.sounds.stop()
 
             if self.phase == "freezetime":
                 if self.play_timeout:
