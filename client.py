@@ -1,3 +1,5 @@
+import datetime
+
 from sounds import SoundEngine
 from state import CS2State
 
@@ -11,6 +13,12 @@ class Client:
     def log(self, text) -> None:
         print(text)
         self.gui.SetStatusText(text)
+        self.log_to_file(text)
+
+    def log_to_file(self, text) -> None:
+        with open('log.txt', 'a', encoding='utf-8') as f:
+            tms = datetime.datetime.now().strftime('%H:%M:%S')
+            f.write(f"[{tms}] {text}\n")
 
     async def reload_sounds(self) -> None:
         """Reloads all sounds.

@@ -178,6 +178,7 @@ class CS2State:
     async def update(self, json):
         """Update the entire game state"""
         with self.lock:
+            self.client.log_to_file(json)
             newstate = PlayerState(json, self.client.sounds)
             await newstate.compare(self.state)
             self.state = newstate

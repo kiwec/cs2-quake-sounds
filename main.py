@@ -73,6 +73,10 @@ async def main():
             os.path.join(cs2_dir, "game", "csgo", "cfg", "gamestate_integration_cqs.cfg"),
         )
 
+    # Clear logs
+    with open('log.txt', 'w', encoding='utf-8') as f:
+        f.write('')
+
     if not bass.Init():
         print(f"Failed to initialize sound engine: error {bass.ErrorGetCode()}")
         return
