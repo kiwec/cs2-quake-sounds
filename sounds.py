@@ -26,6 +26,7 @@ class SoundEngine:
     def __init__(self, client) -> None:
         self.client = client
         self.lock = Lock()
+        self.nb_loaded_sounds = 0
         self.nb_max_sounds = 0
         self.music = None
 
@@ -70,12 +71,12 @@ class SoundEngine:
             self.client.log(f"Failed to load '{filepath}': error {bass.ErrorGetCode()}")
             return
 
-
         with self.lock:
             self.loaded_sounds[category].append(sound)
+            self.nb_loaded_sounds = self.nb_loaded_sounds + 1
             wx.CallAfter(
                 self.client.gui.SetStatusText,
-                f"Loading sounds... ({len(self.loaded_sounds)}/{self.nb_max_sounds})",
+                f"Loading sounds... ({self.nb_loaded_sounds}/{self.nb_max_sounds})",
             )
 
     async def reload(self) -> None:
@@ -96,6 +97,7 @@ class SoundEngine:
                         bass.SampleFree(sound.handle)
 
             self.loaded_sounds = defaultdict(list)
+            self.nb_loaded_sounds = 0
             self.nb_max_sounds = self.max_sounds()
 
         executor = ThreadPoolExecutor(max_workers=1)
