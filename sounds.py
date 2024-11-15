@@ -137,10 +137,10 @@ class SoundEngine:
                 # gain can be between 0.0 and 2.0 with the GUI's volume slider
                 gain: float = 0.0 if self.volume == 0 else self.volume / 50.0
                 if sound.is_stream:
-                    # For streams, we also normalize loudness
-                    loudness_target = -14.0
-                    modifier = pow(10, (loudness_target - sound.loudness) / 20.0)
-                    gain = gain * modifier
+                    loudness_target = config.config["Loudness"].getfloat(sound_name, 0.0)
+                    if loudness_target < 0.0:
+                        modifier = pow(10, (loudness_target - sound.loudness) / 20.0)
+                        gain = gain * modifier
 
                 if not bass.ChannelSetVolume(channel, gain):
                     self.client.log(f"Failed to set volume of '{sound.filename}': error {bass.ErrorGetCode()}")
