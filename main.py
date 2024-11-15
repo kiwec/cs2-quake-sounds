@@ -77,11 +77,13 @@ async def main():
         print(f"Failed to initialize sound engine: error {bass.ErrorGetCode()}")
         return
     if not bass.PluginLoad("bassflac"):
-        print(f"Failed to initialize BASS flac module: error {bass.ErrorGetCode()}")
-        return
+        print(f"Failed to initialize BASSFLAC module: error {bass.ErrorGetCode()}")
     if not bass.PluginLoad("bassopus"):
-        print(f"Failed to initialize BASS opus module: error {bass.ErrorGetCode()}")
-        return
+        print(f"Failed to initialize BASSOPUS module: error {bass.ErrorGetCode()}")
+    if not bass.PluginLoad("basswebm"):
+        print(f"Failed to initialize BASSWEBM module: error {bass.ErrorGetCode()}")
+    if not bass.PluginLoad("bassalac"):
+        print(f"Failed to initialize BASSALAC module: error {bass.ErrorGetCode()}")
 
     app = WxAsyncApp()
     gui.MainFrame(

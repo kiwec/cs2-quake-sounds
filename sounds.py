@@ -17,6 +17,7 @@ class Sound:
     filename: str
     handle: int
     is_stream: bool
+    loudness: float
 
 
 class SoundEngine:
@@ -50,6 +51,17 @@ class SoundEngine:
         if category in ("Freezetime", "MVP", "Round lose", "Round start", "Round win", "Timeout"):
             sound.handle = bass.StreamCreateFile(False, filepath)
             sound.is_stream = True
+
+            # Calculate loudness
+            # TODO: handle -inf
+            bass.SetDevice(0)
+            snd = bass.StreamCreateFile(False, filepath, flags=(bass.BASS_STREAM_DECODE | bass.BASS_SAMPLE_MONO))
+            loud = bass.LoudnessStart(snd)
+            bass.LoudnessDecode(snd)
+            sound.loudness = bass.LoudnessGetLevel(loud)
+            bass.LoudnessStop(loud)
+            bass.ChannelFree(snd)
+            bass.SetDevice(1)
         else:
             sound.handle = bass.SampleLoad(False, filepath)
             sound.is_stream = False
@@ -57,6 +69,7 @@ class SoundEngine:
         if sound.handle is None:
             self.client.log(f"Failed to load '{filepath}': error {bass.ErrorGetCode()}")
             return
+
 
         with self.lock:
             self.loaded_sounds[category].append(sound)
@@ -123,6 +136,12 @@ class SoundEngine:
 
                 # gain can be between 0.0 and 2.0 with the GUI's volume slider
                 gain: float = 0.0 if self.volume == 0 else self.volume / 50.0
+                if sound.is_stream:
+                    # For streams, we also normalize loudness
+                    loudness_target = -14.0
+                    modifier = pow(10, (loudness_target - sound.loudness) / 20.0)
+                    gain = gain * modifier
+
                 if not bass.ChannelSetVolume(channel, gain):
                     self.client.log(f"Failed to set volume of '{sound.filename}': error {bass.ErrorGetCode()}")
                     return False

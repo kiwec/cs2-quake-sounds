@@ -1,18 +1,23 @@
 # WARNING: Claude-generated, expect bugs!
 
 from ctypes import *
+import array
 import os
 import platform
 import sys
 
 if platform.system() == 'Windows':
     bass_lib = 'bass.dll'
+    bassloud_lib = 'bassloud.dll'
 elif platform.system() == 'Darwin':
     bass_lib = 'libbass.dylib'
+    bassloud_lib = 'libbassloud.dylib'
 else:
     bass_lib = 'libbass.so'
+    bassloud_lib = 'libbassloud.so'
 
 bass = CDLL(os.path.join(os.getcwd(), bass_lib))
+bassloud = CDLL(os.path.join(os.getcwd(), bassloud_lib))
 
 # Define function prototypes for correct type handling
 bass.BASS_ChannelGetLength.restype = c_uint64
@@ -21,6 +26,7 @@ bass.BASS_ChannelBytes2Seconds.restype = c_double
 bass.BASS_StreamCreateFile.restype = c_ulong
 bass.BASS_SampleLoad.restype = c_ulong
 bass.BASS_SampleGetChannel.restype = c_ulong
+bassloud.BASS_Loudness_Start.restype = c_ulong
 
 # Error codes
 BASS_OK = 0
@@ -40,9 +46,18 @@ BASS_ERROR_NOPLAY = 24
 BASS_ERROR_FREQ = 25
 BASS_ERROR_UNKNOWN = -1
 
+# Loudness flags
+BASS_LOUDNESS_CURRENT = 0
+BASS_LOUDNESS_INTEGRATED = 1
+BASS_LOUDNESS_RANGE = 2
+BASS_LOUDNESS_PEAK = 4
+BASS_LOUDNESS_TRUEPEAK = 8
+BASS_LOUDNESS_AUTOFREE = 0x8000
+
 # Random flags
 BASS_ATTRIB_VOL = 2
 BASS_UNICODE = 0x80000000
+BASS_STREAM_DECODE = 0x200000
 
 # Device setup flags
 BASS_DEVICE_8BITS = 1
@@ -88,6 +103,9 @@ def PluginLoad(filename):
 def Free():
     """Free all resources used by BASS"""
     return bass.BASS_Free() != 0
+
+def SetDevice(id):
+    return bass.BASS_SetDevice(id)
 
 def GetVersion():
     """Get the BASS version"""
@@ -190,3 +208,27 @@ def ChannelGetVolume(handle):
     if bass.BASS_ChannelGetAttribute(handle, BASS_ATTRIB_VOL, byref(volume)) != 0:
         return volume.value
     return None
+
+def LoudnessStart(decoder, flags=BASS_LOUDNESS_INTEGRATED):
+    return bassloud.BASS_Loudness_Start(c_ulong(decoder), c_ulong(flags), c_int(0))
+
+def LoudnessDecode(decoder):
+    buf_size = 44100
+    buf = array.array('f', [0] * (buf_size // 4))
+    buffer_address = buf.buffer_info()[0]
+    while bass.BASS_ChannelGetData(c_ulong(decoder), c_void_p(buffer_address), c_ulong(buf_size)) >= 0:
+        pass
+
+def LoudnessGetLevel(handle, mode=BASS_LOUDNESS_INTEGRATED):
+    level = c_float()
+    result = bassloud.BASS_Loudness_GetLevel(c_ulong(handle), c_ulong(mode), byref(level))
+    if not result:
+        print(f"Failed to call BASS_Loudness_GetLevel: error {ErrorGetCode()}")
+        return -14.0 # TODO return -inf
+    return level.value
+
+def LoudnessStop(handle):
+    return bassloud.BASS_Loudness_Stop(c_ulong(handle))
+
+def ChannelFree(handle):
+    return bass.BASS_ChannelFree(c_ulong(handle))
