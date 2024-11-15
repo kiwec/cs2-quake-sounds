@@ -11,6 +11,7 @@ buildOptions: Dict = dict(
         "icon.ico",
         "config.ini",
         "bass.dll",
+        "bassloud.dll",
         "bassflac.dll",
         "bassopus.dll",
     ],
@@ -24,7 +25,7 @@ executables = [Executable("main.py", base=base, icon="icon.ico")]
 
 setup(
     name="cs2-quake-sounds",
-    version="2.1.1",
+    version="2.2.0",
     description="Play quake sounds via Gamestate Integration",
     options=dict(build_exe=buildOptions),
     executables=executables,
