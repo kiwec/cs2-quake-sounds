@@ -111,12 +111,18 @@ class PlayerState:
                 else:
                     self.sounds.play("Freezetime")
             elif self.phase == "live":
+                self.sounds.stop()
                 self.sounds.play("Round start")
+                self.play_timeout = False
             elif self.phase == "over":
                 if self.is_local_player and self.mvps == old_state.mvps + 1:
                     self.sounds.play("MVP") or self.sounds.play("Round win")
                 else:
                     self.sounds.play("Round win" if self.won_round else "Round lose")
+        else:
+            if self.phase == "freezetime" and self.play_timeout:
+                self.sounds.play("Timeout") or self.sounds.play("Freezetime")
+                self.play_timeout = False
 
         if not self.is_local_player or not old_state.is_local_player:
             # We're spectating (or just were spectating someone)
