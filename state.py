@@ -49,7 +49,7 @@ class PlayerState:
                 weapon = player["weapons"][weapon]
                 if weapon["state"] != "active":
                     continue
-                if weapon["name"] in ("weapon_knife", "weapon_taser"):
+                if weapon["type"] == "Knife" or weapon["name"] == "weapon_taser":
                     self.is_knife_active = True
                     break
 
