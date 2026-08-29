@@ -4,9 +4,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from version import __version__
+
 setup(
     name="cs2-custom-sounds",
-    version="2.2.2",
+    version=__version__,
     description="Play quake sounds via Gamestate Integration",
     python_requires="==3.*,>=3.7.0",
     author="kiwec",

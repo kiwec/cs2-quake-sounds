@@ -10,6 +10,7 @@ from wxasync import WxAsyncApp  # type: ignore
 import bass
 import gui
 import steamfiles
+from version import __version__
 
 
 def get_steam_path() -> str:
@@ -92,7 +93,7 @@ async def main():
     app = WxAsyncApp()
     gui.MainFrame(
         None,
-        title="CS2 Quake Sounds",
+        title=f"CS2 Quake Sounds ({__version__})",
         size=wx.Size(320, 230),
         style=wx.DEFAULT_FRAME_STYLE & ~(wx.RESIZE_BORDER | wx.MAXIMIZE_BOX),
     )
