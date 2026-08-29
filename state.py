@@ -35,8 +35,8 @@ class PlayerState:
 
         try:
             self.steamid = json["provider"]["steamid"]
-        except KeyError:
-            pass
+        except KeyError as e:
+            self.sounds.client.log(f"Parsing fail in provider: {e}")
 
         try:
             player = json["player"]
@@ -44,34 +44,43 @@ class PlayerState:
             self.is_local_player = self.steamid == self.playerid
             self.player_name = player["name"]
             self.is_ingame = player["activity"] != "menu"
+        except KeyError as e:
+            self.sounds.client.log(f"Parsing fail in player info: {e}")
 
-            for weapon in player["weapons"]:
-                weapon = player["weapons"][weapon]
-                if weapon["state"] != "active":
+        try:
+            player = json["player"]
+            for weapon in player["weapons"].values():
+                if weapon.get("state") != "active":
                     continue
-                if weapon["type"] == "Knife" or weapon["name"] == "weapon_taser":
+                if weapon.get("type") == "Knife" or weapon.get("name") == "weapon_taser":
                     self.is_knife_active = True
                     break
+        except KeyError as e:
+            self.sounds.client.log(f"Parsing fail in weapons: {e}")
 
-            state = player["state"]
+        try:
+            state = json["player"]["state"]
             self.flash_opacity = state["flashed"]
-
-            match_stats = player["match_stats"]
-            self.mvps = match_stats["mvps"]
             self.round_kills = state["round_kills"]
             self.round_headshots = state["round_killhs"]
+        except KeyError as e:
+            self.sounds.client.log(f"Parsing fail in player state: {e}")
+
+        try:
+            match_stats = json["player"]["match_stats"]
+            self.mvps = match_stats["mvps"]
             self.total_deaths = match_stats["deaths"]
             self.total_kills = match_stats["kills"]
             self.score = match_stats["score"]
-        except KeyError:
-            pass
+        except KeyError as e:
+            self.sounds.client.log(f"Parsing fail match_stats: {e}")
 
         try:
             self.phase = json["round"]["phase"]
             if self.phase == "over":
                 self.won_round = json["round"]["win_team"] == json["player"]["team"]
-        except KeyError:
-            pass
+        except KeyError as e:
+            self.sounds.client.log(f"Parsing fail in round: {e}")
 
         try:
             self.current_round = json["map"]["round"]
@@ -79,8 +88,8 @@ class PlayerState:
                 json["map"]["team_ct"]["timeouts_remaining"] +
                 json["map"]["team_t"]["timeouts_remaining"]
             )
-        except KeyError:
-            pass
+        except KeyError as e:
+            self.sounds.client.log(f"Parsing fail in map: {e}")
 
     async def compare(self, old_state) -> None:
         if not self.is_ingame:
