@@ -140,10 +140,13 @@ class PlayerState:
 
         # Lost score - either teamkilled or suicided
         if self.score < old_state.score:
-            if self.total_deaths == old_state.total_deaths + 1:
-                self.sounds.play("Suicide")
-            elif self.total_deaths == old_state.total_deaths:
-                self.sounds.play("Teamkill")
+            # Check if match stats were reset (e.g. warmup ended)
+            is_reset = self.score == 0 and self.total_kills == 0 and self.total_deaths == 0
+            if not is_reset:
+                if self.total_deaths == old_state.total_deaths + 1:
+                    self.sounds.play("Suicide")
+                elif self.total_deaths == old_state.total_deaths:
+                    self.sounds.play("Teamkill")
         # Didn't suicide or teamkill -> check if player just died
         elif self.total_deaths == old_state.total_deaths + 1:
             self.sounds.play("Death")
